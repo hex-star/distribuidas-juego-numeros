@@ -126,7 +126,7 @@ function Secundaria({ route, navigation }) {
           onPress={() =>
             navigation.push('Secundaria', {
               itemId: Math.floor(Math.random() * 100),
-              otherParam: "y yo soy el agente "
+              otherParam: "y yo soy el agente " + nombre
             })
           }
         />
