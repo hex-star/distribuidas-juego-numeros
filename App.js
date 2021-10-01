@@ -103,7 +103,7 @@ function Principal({ navigation }) {
         onPress={() => {
           navigation.navigate('Secundaria', {
             itemId: 86,
-            otherParam: 'Soy el superagente '
+            otherParam: 'Soy el superagente ' + nombre
           });
         }}
       />
@@ -126,7 +126,7 @@ function Secundaria({ route, navigation }) {
           onPress={() =>
             navigation.push('Secundaria', {
               itemId: Math.floor(Math.random() * 100),
-              otherParam: "y yo soy el agente " + nombre
+              otherParam: "y yo soy el agente "
             })
           }
         />
