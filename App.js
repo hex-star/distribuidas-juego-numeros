@@ -1,8 +1,10 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect, Component } from 'react';
+
 
 import { StyleSheet, View, Text, Button, TextInput, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { FlatList } from 'react-native-gesture-handler';
 
 const styles = StyleSheet.create({
   radioButtonContainer: {
@@ -31,6 +33,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 16,
     width: 150
+  },
+  item: {
+    fontSize:20
   }
 })
 
@@ -117,53 +122,50 @@ function Secundaria({ route, navigation }) {
   /* Obtengo los parámetros pasados */
   const [numero, setNumero] = useState(null);
   const [contIngresos, setContIngresos] = useState(0);
-  const [numeroSecreto,setNumeroSecreto] = useState(null);
-  const [fin,setFin] = useState(false);
+  const [numeroSecreto, setNumeroSecreto] = useState(null);
+  const [fin, setFin] = useState(false);
+  const [evaluaciones, setEvaluaciones] = useState([])
   const { itemId } = route.params;
   const { otherParam } = route.params;
-  const {repeat} = route.params;
+  const { repeat } = route.params;
 
-  useEffect( () => {
+  useEffect(() => {
     // Actualiza el título del documento usando la API del navegador
-    if ( numeroSecreto == null)
-    {
-     setNumeroSecreto(Math.floor(1000 + Math.random() * 9000));
-    
+    if (numeroSecreto == null) {
+      setNumeroSecreto(Math.floor(1000 + Math.random() * 9000));
+
 
     }
-    if (repeat == false && numeroSecreto != null )
-    {
-      if (isRepeated(numeroSecreto) == true)
-      {    
-       setNumeroSecreto(Math.floor(1000 + Math.random() * 9000));
+    if (repeat == false && numeroSecreto != null) {
+      if (isRepeated(numeroSecreto) == true) {
+        setNumeroSecreto(Math.floor(1000 + Math.random() * 9000));
 
         console.log(numeroSecreto)
       }
-   
+
     }
 
-  
-  
+
+
   });
 
   const isRepeated = (x) => {
-  
-    var cnt = [0,0,0,0,0,0,0,0,0,0]
+
+    var cnt = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     var cont = 4;
-    while (cont > 0){
-      console.log("rem:"+rem)
-      console.log("x:"+x)
+    while (cont > 0) {
+      console.log("rem:" + rem)
+      console.log("x:" + x)
       var rem = x % 10
       cnt[rem] = cnt[rem] + 1
       x = x / 10;
-      x=Math.floor(x);
+      x = Math.floor(x);
       cont--;
     }
     console.log(cnt)
 
-    for ( var i = 0;i<10;i++){
-      if (cnt[i] > 1)
-      {
+    for (var i = 0; i < 10; i++) {
+      if (cnt[i] > 1) {
         return true;
       }
     }
@@ -172,64 +174,127 @@ function Secundaria({ route, navigation }) {
   }
 
   const play = () => {
-    
-    if (numero != null && numero.toString().length === 4)
-    {
+
+    if (numero != null && numero.toString().length === 4) {
       setContIngresos(contIngresos + 1);
-      console.log(contIngresos)
-      
-    }
-    else
-    {
+      if (fin == false)
+      {
+        evaluarNumeroIngresado(numero);
+      }
     
+      console.log(contIngresos)
+
+    }
+    else {
+
       alert("El numero ingresado es invalido")
       console.log(numeroSecreto)
     }
 
-    if (contIngresos >= 10)
-    {
-      
+    if (contIngresos >= 9) {
+
       setFin(true);
     }
-    if (numero.toString() === numeroSecreto.toString())
-    {
+    if (numero != null && numero.toString() === numeroSecreto.toString()) {
       alert("Ganaste!")
       setFin(true);
     }
 
   }
 
+  const evaluarNumeroIngresado = () => {
+   var ns = numeroSecreto.toString();
+   var x = numero.toString();
+   var bien = 0;
+   var regular = 0;
+   var mal = 0;
+   var aux = ["mal","mal","mal","mal"];
+
+    console.log(ns + "-"+ x);
+    console.log("a" + ns.length)
+
+  
+    for (var i = 0 ; i < 4; i++)
+    {
+
+      for (var j=0 ; j < 4; j++)
+      {
+       
+        if (ns[j] == x[i]){
+          
+          if (j == i)
+          {
+           // bien++;
+            aux[i] = "bien"
+            break;
+          }
+          else
+          {
+           // regular++;
+            aux[i] = "regular"
+          }
+          
+        }
+      }
+    }
+    for (i = 0; i < aux.length ; i++)
+    {
+      switch(aux[i]){
+        case "bien" :
+          bien++;
+          break;
+        case "regular":
+          regular++;
+          break;
+        case "mal":
+          mal++;
+      }
+    }
+    //mal = ns.length - bien - regular
+  
+    if (mal < 0)
+    {
+      mal = 0;
+    }
+ 
+    setEvaluaciones([...evaluaciones,numero + " " + bien + "B " + regular + "R " + mal + "M"]);
+    return
+  }
+
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent:'space-around' }}>
-      <Text style={{ fontStyle: 'italic', fontWeight: 'bold', fontSize: 20,justifyContent:'flex-start' }}>
-      {fin ? <Text>Nro. Secreto: {numeroSecreto}</Text> : "Nro. Secreto: ????"}
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
+      <Text style={{ fontStyle: 'italic', fontWeight: 'bold', fontSize: 20, justifyContent: 'flex-start' }}>
+        {fin ? <Text>Nro. Secreto: {numeroSecreto}</Text> : "Nro. Secreto: ????"}
       </Text>
       <Text style={{ margin: 20, fontSize: 20 }}></Text>
-
-      <View style={{ margin: 20, justifyContent: 'center',display:'flex',flexDirection:'row',alignItems:'flex-end' }}>
-      <TextInput
-        style={{
-          margin: 10,
-          textAlign: 'center',
-          borderColor: '#060606',
-          borderWidth: 1,
-          borderRadius: 10,
-          width: 200,
-          height: 50,
-          backgroundColor: '#b4d8b0',
-        }}
-        placeholder='Ingrese un numero'
-        onChangeText={text => setNumero(text)}
-      />  
-      <View style={{height:50}}>
-      <Button
-     
-          title="PLAY"
-          onPress={() =>
-           play()
-          }
-        />
+      <View>
+        <FlatList data={evaluaciones}  renderItem={({item}) => <Text style={styles.item}>{item}</Text> } />
       </View>
+
+      <View style={{ margin: 20, justifyContent: 'center', display: 'flex', flexDirection: 'row', alignItems: 'flex-end' }}>
+        <TextInput
+          style={{
+            margin: 10,
+            textAlign: 'center',
+            borderColor: '#060606',
+            borderWidth: 1,
+            borderRadius: 10,
+            width: 200,
+            height: 50,
+            backgroundColor: '#b4d8b0',
+          }}
+          placeholder='Ingrese un numero'
+          onChangeText={text => setNumero(text)}
+        />
+        <View style={{ height: 50 }}>
+          <Button
+
+            title="PLAY"
+            onPress={() =>
+              play()
+            }
+          />
+        </View>
 
       </View>
       {/*
@@ -241,7 +306,7 @@ function Secundaria({ route, navigation }) {
       </View>
   
        */}
-       </View>
+    </View>
   );
 }
 
