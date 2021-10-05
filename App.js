@@ -5,6 +5,7 @@ import { StyleSheet, View, Text, Button, TextInput, TouchableOpacity } from 'rea
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { FlatList } from 'react-native-gesture-handler';
+import { lessThan } from 'react-native-reanimated';
 
 const styles = StyleSheet.create({
   radioButtonContainer: {
@@ -35,24 +36,29 @@ const styles = StyleSheet.create({
     width: 150
   },
   item: {
-    fontSize:20
+    fontSize:20,
+    borderColor: '#060606',
+    borderWidth: 3,
+    width: 200,
+    display:'flex',
+    justifyContent: 'center'
   }
 })
 
 
 
 function Principal({ navigation }) {
-  const [isRepeat, setIsRepeat] = useState([true]);
+  const [isRepeat, setIsRepeat] = useState([false]);
   const [nombre, setNombre] = useState('Extraño');
   const handleChangeRepeat = () => {
-    if (!isRepeat) {
-      setIsRepeat(true)
+    if (isRepeat) {
+      setIsRepeat(false)
     }
   }
 
   const handleChangeNotRepeat = () => {
-    if (isRepeat) {
-      setIsRepeat(false)
+    if (!isRepeat) {
+      setIsRepeat(true)
     }
   }
 
@@ -79,7 +85,7 @@ function Principal({ navigation }) {
       />
       <View style={styles.radioButtonContainer}>
         <TouchableOpacity onPress={handleChangeRepeat} style={styles.radioButton}>
-          {isRepeat ? <View style={styles.radioButtonIcon} /> : null}
+          {!isRepeat ? <View style={styles.radioButtonIcon} /> : null}
         </TouchableOpacity>
         <TouchableOpacity onPress={handleChangeRepeat}>
           <Text style={styles.radioButtonText}>Con repetición</Text>
@@ -87,7 +93,7 @@ function Principal({ navigation }) {
       </View>
       <View style={styles.radioButtonContainer}>
         <TouchableOpacity onPress={handleChangeNotRepeat} style={styles.radioButton}>
-          {!isRepeat ? <View style={styles.radioButtonIcon} /> : null}
+          {isRepeat ? <View style={styles.radioButtonIcon} /> : null}
         </TouchableOpacity>
         <TouchableOpacity onPress={handleChangeNotRepeat}>
           <Text style={styles.radioButtonText}>Sin repetición</Text>
@@ -187,7 +193,7 @@ function Secundaria({ route, navigation }) {
     }
     else {
 
-      alert("El numero ingresado es invalido")
+      alert("Debe ingresar un número de 4 cifras")
       console.log(numeroSecreto)
     }
 
@@ -257,17 +263,18 @@ function Secundaria({ route, navigation }) {
       mal = 0;
     }
  
-    setEvaluaciones([...evaluaciones,numero + " " + bien + "B " + regular + "R " + mal + "M"]);
+    setEvaluaciones(
+        [...evaluaciones,numero + "➡" + bien + "B " + regular + "R " + mal + "M"]);
     return
   }
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
-      <Text style={{ fontStyle: 'italic', fontWeight: 'bold', fontSize: 20, justifyContent: 'flex-start' }}>
-        {fin ? <Text>Nro. Secreto: {numeroSecreto}</Text> : "Nro. Secreto: ????"}
+      <Text style={{ fontStyle: 'normal', fontWeight: 'bold', fontSize: 20, justifyContent: 'flex-start' }}>
+        {fin ? <Text>Nro. Secreto: {numeroSecreto}</Text> : "Nro. Secreto: ? ? ? ?"}
       </Text>
       <Text style={{ margin: 20, fontSize: 20 }}></Text>
-      <View>
+      <View style={{display:'flex', justifyContent:'center'}}>
         <FlatList data={evaluaciones}  renderItem={({item}) => <Text style={styles.item}>{item}</Text> } />
       </View>
 
