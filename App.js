@@ -1,11 +1,11 @@
 import React, { useState, useEffect, Component } from 'react';
 
-
 import { StyleSheet, View, Text, Button, TextInput, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { FlatList } from 'react-native-gesture-handler';
 import { lessThan } from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const styles = StyleSheet.create({
   radioButtonContainer: {
@@ -36,11 +36,11 @@ const styles = StyleSheet.create({
     width: 150
   },
   item: {
-    fontSize:20,
+    fontSize: 20,
     borderColor: '#060606',
     borderWidth: 3,
     width: 200,
-    display:'flex',
+    display: 'flex',
     justifyContent: 'center'
   }
 })
@@ -65,6 +65,10 @@ function Principal({ navigation }) {
   const handleSubmit = () => {
     alert(nombre)
   }
+
+  useEffect(() => {
+
+  })
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
@@ -115,7 +119,26 @@ function Principal({ navigation }) {
           onPress={() => {
             navigation.navigate('Secundaria', {
               repeat: isRepeat,
-              otherParam: 'Soy el superagente ' + nombre
+              otherParam: nombre,
+
+            });
+          }}
+        />
+        <Button
+          style={{
+            textAlign: 'center',
+            borderColor: '#060606',
+            borderWidth: 1,
+            borderRadius: 100,
+          }}
+          marginTop="200 px"
+          title="Comenzar"
+          color="#b4d8b0"
+          borderColor="#060606"
+          width="200"
+          onPress={() => {
+            navigation.navigate('Terciaria', {
+              otherParam: nombre
             });
           }}
         />
@@ -134,6 +157,7 @@ function Secundaria({ route, navigation }) {
   const { itemId } = route.params;
   const { otherParam } = route.params;
   const { repeat } = route.params;
+
 
   useEffect(() => {
     // Actualiza el título del documento usando la API del navegador
@@ -183,11 +207,10 @@ function Secundaria({ route, navigation }) {
 
     if (numero != null && numero.toString().length === 4) {
       setContIngresos(contIngresos + 1);
-      if (fin == false)
-      {
+      if (fin == false) {
         evaluarNumeroIngresado(numero);
       }
-    
+
       console.log(contIngresos)
 
     }
@@ -200,53 +223,50 @@ function Secundaria({ route, navigation }) {
     if (contIngresos >= 9) {
 
       setFin(true);
+      guardarPartida();
     }
     if (numero != null && numero.toString() === numeroSecreto.toString()) {
       alert("Ganaste!")
       setFin(true);
+      guardarPartida();
     }
 
   }
 
   const evaluarNumeroIngresado = () => {
-   var ns = numeroSecreto.toString();
-   var x = numero.toString();
-   var bien = 0;
-   var regular = 0;
-   var mal = 0;
-   var aux = ["mal","mal","mal","mal"];
+    var ns = numeroSecreto.toString();
+    var x = numero.toString();
+    var bien = 0;
+    var regular = 0;
+    var mal = 0;
+    var aux = ["mal", "mal", "mal", "mal"];
 
-    console.log(ns + "-"+ x);
+    console.log(ns + "-" + x);
     console.log("a" + ns.length)
 
-  
-    for (var i = 0 ; i < 4; i++)
-    {
 
-      for (var j=0 ; j < 4; j++)
-      {
-       
-        if (ns[j] == x[i]){
-          
-          if (j == i)
-          {
-           // bien++;
+    for (var i = 0; i < 4; i++) {
+
+      for (var j = 0; j < 4; j++) {
+
+        if (ns[j] == x[i]) {
+
+          if (j == i) {
+            // bien++;
             aux[i] = "bien"
             break;
           }
-          else
-          {
-           // regular++;
+          else {
+            // regular++;
             aux[i] = "regular"
           }
-          
+
         }
       }
     }
-    for (i = 0; i < aux.length ; i++)
-    {
-      switch(aux[i]){
-        case "bien" :
+    for (i = 0; i < aux.length; i++) {
+      switch (aux[i]) {
+        case "bien":
           bien++;
           break;
         case "regular":
@@ -257,25 +277,47 @@ function Secundaria({ route, navigation }) {
       }
     }
     //mal = ns.length - bien - regular
-  
-    if (mal < 0)
-    {
+
+    if (mal < 0) {
       mal = 0;
     }
- 
+
     setEvaluaciones(
-        [...evaluaciones,numero + "➡" + bien + "B " + regular + "R " + mal + "M"]);
+      [...evaluaciones, numero + "➡" + bien + "B " + regular + "R " + mal + "M"]);
     return
+  }
+  { numeroSecreto, evaluaciones }
+  const guardarPartida = async () => {
+    try {
+      // await AsyncStorage.setItem(otherParam,  JSON.stringify( numeroSecreto)   )
+      //await AsyncStorage.setItem('@'+ otherParam,   JSON.stringify(evaluaciones)   )
+      //AsyncStorage.clear()
+
+      //await AsyncStorage.getItem('@'+ otherParam)
+
+      //    if (await AsyncStorage.getItem(otherParam) == null){
+      //    await AsyncStorage.setItem(otherParam, + '{' + numeroSecreto + ',' + evaluaciones + '}'  )
+      //  }
+      //  else{
+      await AsyncStorage.setItem(otherParam, await AsyncStorage.getItem(otherParam) + '{"numero":' + '"' + +numeroSecreto + '"' + ', "evaluaciones":' + '"' + evaluaciones + '"' + '}' + ',')
+      //   }
+
+      alert(await AsyncStorage.getItem(otherParam))
+    } catch (e) {
+      console.log("ERROR WHEN TRYING TO SAVE DATA")
+    }
+
+    console
   }
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
+    <View style={{ alignItems: 'center', justifyContent: 'space-around', marginTop: 50 }}>
       <Text style={{ fontStyle: 'normal', fontWeight: 'bold', fontSize: 20, justifyContent: 'flex-start' }}>
-        {fin ? <Text>Nro. Secreto: {numeroSecreto}</Text> : "Nro. Secreto: ? ? ? ?"}
+        {fin ? <Text style={{ marginTop: 0 }}>Nro. Secreto: {numeroSecreto}</Text> : "Nro. Secreto: ? ? ? ?"}
       </Text>
       <Text style={{ margin: 20, fontSize: 20 }}></Text>
-      <View style={{display:'flex', justifyContent:'center'}}>
-        <FlatList data={evaluaciones}  renderItem={({item}) => <Text style={styles.item}>{item}</Text> } />
+      <View style={{ marginTop: 50, display: 'flex', justifyContent: 'center' }}>
+        <FlatList style={{ marginTop: 0 }} data={evaluaciones} renderItem={({ item }) => <Text style={styles.item}>{item}</Text>} keyExtractor={(item, index) => index.toString()} />
       </View>
 
       <View style={{ margin: 20, justifyContent: 'center', display: 'flex', flexDirection: 'row', alignItems: 'flex-end' }}>
@@ -317,6 +359,63 @@ function Secundaria({ route, navigation }) {
   );
 }
 
+function Terciaria({ route, navigation }) {
+  const { otherParam } = route.params;
+  const [partida, setPartida] = useState(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const aux = await AsyncStorage.getItem(otherParam)
+        setPartida(JSON.parse('[' + aux.slice(4, -1) + ']'))
+        // setPartida((aux.slice(4, -1)));
+
+
+
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    fetchData()
+  }, [])
+
+
+
+
+
+
+  return (
+    <View style={{ alignItems: 'center', justifyContent: 'space-around', marginTop: 50 }}>
+      <View>
+
+          {/*partida.map((item) => {
+            return (
+              <View>
+                <Text>{item.numero}</Text>
+                <Text>{item.evaluaciones}</Text>
+              </View>)
+
+
+          })*/}
+    
+      </View>
+     {/* <Text style={{ margin: 20, fontSize: 20 }}>{partida}</Text>*/}
+
+
+
+      {/*
+            <View style={{ margin: 20, justifyContent: 'center' }}>
+        <Button style={{ margin: 20 }} title="Principal" onPress={() => navigation.navigate('Principal')} />
+      </View>
+      <View style={{ margin: 20, justifyContent: 'center' }}>
+        <Button style={{ margin: 20 }} title="Anterior" onPress={() => navigation.goBack()} />
+      </View>
+  
+       */}
+    </View>
+  );
+}
+
 const Stack = createStackNavigator();
 
 function App() {
@@ -326,6 +425,7 @@ function App() {
         <Stack.Screen name="Principal" component={Principal}
           options={{ title: 'Primera' }} />
         <Stack.Screen name="Secundaria" component={Secundaria} />
+        <Stack.Screen name="Terciaria" component={Terciaria} />
       </Stack.Navigator>
     </NavigationContainer>
   );
