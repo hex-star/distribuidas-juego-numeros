@@ -45,11 +45,11 @@ const styles = StyleSheet.create({
   }
 })
 
-
+var nombre = 'Extraño';
+var contadorPartidas = 0;
 
 function Principal({ navigation }) {
   const [isRepeat, setIsRepeat] = useState([false]);
-  const [nombre, setNombre] = useState('Extraño');
   const handleChangeRepeat = () => {
     if (isRepeat) {
       setIsRepeat(false)
@@ -60,10 +60,6 @@ function Principal({ navigation }) {
     if (!isRepeat) {
       setIsRepeat(true)
     }
-  }
-
-  const handleSubmit = () => {
-    alert(nombre)
   }
 
   useEffect(() => {
@@ -85,7 +81,7 @@ function Principal({ navigation }) {
           backgroundColor: '#b4d8b0',
         }}
         placeholder='Ingrese nombre'
-        onChangeText={text => setNombre(text)}
+        onChangeText={text => nombre}
       />
       <View style={styles.radioButtonContainer}>
         <TouchableOpacity onPress={handleChangeRepeat} style={styles.radioButton}>
@@ -132,7 +128,7 @@ function Principal({ navigation }) {
             borderRadius: 100,
           }}
           marginTop="200 px"
-          title="Comenzar"
+          title="Ver Historial"
           color="#b4d8b0"
           borderColor="#060606"
           width="200"
@@ -223,12 +219,12 @@ function Secundaria({ route, navigation }) {
     if (contIngresos >= 9) {
 
       setFin(true);
-      guardarPartida();
+      guardarPartida("10", "Perdió");
     }
     if (numero != null && numero.toString() === numeroSecreto.toString()) {
       alert("Ganaste!")
       setFin(true);
-      guardarPartida();
+      guardarPartida(contIngresos, "Ganó");
     }
 
   }
@@ -286,28 +282,13 @@ function Secundaria({ route, navigation }) {
       [...evaluaciones, numero + "➡" + bien + "B " + regular + "R " + mal + "M"]);
     return
   }
+
   { numeroSecreto, evaluaciones }
-  const guardarPartida = async () => {
-    try {
-      // await AsyncStorage.setItem(otherParam,  JSON.stringify( numeroSecreto)   )
-      //await AsyncStorage.setItem('@'+ otherParam,   JSON.stringify(evaluaciones)   )
+
+  const guardarPartida = async (intentos, resultado) => {
+      const esteResultado = { nombre: nombre, resultado: resultado, intentos: intentos };
       //AsyncStorage.clear()
-
-      //await AsyncStorage.getItem('@'+ otherParam)
-
-      //    if (await AsyncStorage.getItem(otherParam) == null){
-      //    await AsyncStorage.setItem(otherParam, + '{' + numeroSecreto + ',' + evaluaciones + '}'  )
-      //  }
-      //  else{
-      await AsyncStorage.setItem(otherParam, await AsyncStorage.getItem(otherParam) + '{"numero":' + '"' + +numeroSecreto + '"' + ', "evaluaciones":' + '"' + evaluaciones + '"' + '}' + ',')
-      //   }
-
-      alert(await AsyncStorage.getItem(otherParam))
-    } catch (e) {
-      console.log("ERROR WHEN TRYING TO SAVE DATA")
-    }
-
-    console
+      AsyncStorage.setItem(('resultado' + contadorPartidas), JSON.stringify(esteResultado)); 
   }
 
   return (
@@ -360,17 +341,23 @@ function Secundaria({ route, navigation }) {
 }
 
 function Terciaria({ route, navigation }) {
-  const { otherParam } = route.params;
-  const [partida, setPartida] = useState(null);
+  const [resultados, setResultados] = useState();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const aux = await AsyncStorage.getItem(otherParam)
-        setPartida(JSON.parse('[' + aux.slice(4, -1) + ']'))
-        // setPartida((aux.slice(4, -1)));
+        var array = new Array;
+        AsyncStorage.getAllKeys((err, keys) => {
+          AsyncStorage.multiGet(keys, (err, stores) => {
+            stores.map((result, i, store) => {
+              // get at each store's key/value so you can work with it
+              array.push(JSON.parse(store[i][1]));
+            });
+          });
+        });
 
-
+        setResultados(array);
+        console.log('resultados state: ' + resultados);
 
       } catch (e) {
         console.log(e)
@@ -380,24 +367,17 @@ function Terciaria({ route, navigation }) {
   }, [])
 
 
-
-
-
-
   return (
+    (resultados) ? (
     <View style={{ alignItems: 'center', justifyContent: 'space-around', marginTop: 50 }}>
       <View>
-
-          {/*partida.map((item) => {
-            return (
-              <View>
-                <Text>{item.numero}</Text>
-                <Text>{item.evaluaciones}</Text>
-              </View>)
-
-
-          })*/}
-    
+        {resultados.map((res) => {
+            <View>
+              <Text>{res.nombre}</Text>
+              <Text>{res.resultado}</Text>
+              <Text>{res.intentos}</Text>
+            </View>
+        })}
       </View>
      {/* <Text style={{ margin: 20, fontSize: 20 }}>{partida}</Text>*/}
 
@@ -413,6 +393,7 @@ function Terciaria({ route, navigation }) {
   
        */}
     </View>
+    ) : (<View><Text>No hay resultados</Text></View>)
   );
 }
 
@@ -423,8 +404,8 @@ function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Principal">
         <Stack.Screen name="Principal" component={Principal}
-          options={{ title: 'Primera' }} />
-        <Stack.Screen name="Secundaria" component={Secundaria} />
+          options={{ title: 'Menu' }} />
+        <Stack.Screen name="Secundaria" component={Secundaria} options={{ title: 'Jugar' }} />
         <Stack.Screen name="Terciaria" component={Terciaria} />
       </Stack.Navigator>
     </NavigationContainer>
