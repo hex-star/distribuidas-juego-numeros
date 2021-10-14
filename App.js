@@ -59,10 +59,6 @@ function Principal({ navigation }) {
     }
   }
 
-  useEffect(() => {
-
-  })
-
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
       <Text style={{ fontStyle: 'normal', fontWeight: 'bold', fontSize: 20, margin: 30 }}>Juego de los numeros</Text>
@@ -269,7 +265,6 @@ function Secundaria({ route, navigation }) {
           mal++;
       }
     }
-    //mal = ns.length - bien - regular
 
     if (mal < 0) {
       mal = 0;
@@ -285,7 +280,7 @@ function Secundaria({ route, navigation }) {
   const guardarPartida = async (intentos, resultado) => {
       const esteResultado = { nombre: nombre, resultado: resultado, intentos: intentos };
       //AsyncStorage.clear()
-      await AsyncStorage.setItem(('resultado' + contadorPartidas), JSON.stringify(esteResultado)); 
+      await AsyncStorage.setItem('resultados', await AsyncStorage.getItem('resultados') + JSON.stringify(esteResultado) + ',' ); 
       contadorPartidas++;
   }
 
@@ -330,41 +325,45 @@ function Secundaria({ route, navigation }) {
 }
 
 function Terciaria({ route, navigation }) {
-  const [resultados, setResultados] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [resultados, setResultados] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchData = async ()  => {
       try {
-        AsyncStorage.getAllKeys((err, keys) => {
-          AsyncStorage.multiGet(keys, (err, stores) => {
-            stores.map((result, i, store) => {
-              console.log("pushing key: " + store[i][0]);
-              const value = JSON.parse(store[i][1]);
-              console.log("pushing key: " + value.nombre);
-              setResultados([...resultados, { nombre: value.nombre, resultado: value.resultado, intentos: value.intentos }])
-              setTimeout(() => {
-                setLoading(false);
-              }, 500);
-              console.log('resultados state: ' + resultados);
-            });  
-          });
-        });
+        setIsLoading(true);
+        AsyncStorage.getItem('resultados')
+        .then((aux) => {
+          console.log('aux: ' + aux.slice(4, -1));
+          const resultadosJson = JSON.parse('[' + aux.slice(4, -1) + ']');
+          
+          console.log(resultadosJson);
+
+          setResultados(resultadosJson);
+
+          console.log('state: ' + JSON.stringify(resultados))
+        })
+        
 
       } catch (e) {
-        console.log(e)
+        console.log(e);
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchData()
   }, [])
 
 
+
   return (
-    (!loading && resultados) ? (
+    (!isLoading && resultados) ? (
     <View style={{ alignItems: 'center', justifyContent: 'space-around', marginTop: 50 }}>
       <View>
         <View>
           <Text width="300px" style={styles.item}>Nombre | Resultado | Intentos</Text>
+          
+          
         </View>
         {resultados.map((res) => {
           <Text width="300px" style={styles.item}>{res.nombre}</Text>
