@@ -1,10 +1,8 @@
-import React, { useState, useEffect, Component } from 'react';
-
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Button, TextInput, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { FlatList } from 'react-native-gesture-handler';
-import { lessThan } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const styles = StyleSheet.create({
@@ -39,7 +37,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     borderColor: '#060606',
     borderWidth: 3,
-    width: 200,
     display: 'flex',
     justifyContent: 'center'
   }
@@ -68,7 +65,7 @@ function Principal({ navigation }) {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
-      <Text style={{ fontStyle: 'normal', fontWeight: 'bold', fontSize: 20, margin: 30 }}>Juego de los números</Text>
+      <Text style={{ fontStyle: 'normal', fontWeight: 'bold', fontSize: 20, margin: 30 }}>Juego de los numeros</Text>
       <TextInput
         style={{
           margin: 10,
@@ -81,7 +78,7 @@ function Principal({ navigation }) {
           backgroundColor: '#b4d8b0',
         }}
         placeholder='Ingrese nombre'
-        onChangeText={text => nombre}
+        onChangeText={(text) => nombre = text}
       />
       <View style={styles.radioButtonContainer}>
         <TouchableOpacity onPress={handleChangeRepeat} style={styles.radioButton}>
@@ -224,7 +221,7 @@ function Secundaria({ route, navigation }) {
     if (numero != null && numero.toString() === numeroSecreto.toString()) {
       alert("Ganaste!")
       setFin(true);
-      guardarPartida(contIngresos, "Ganó");
+      guardarPartida((contIngresos+1).toString(), "Ganó");
     }
 
   }
@@ -288,7 +285,8 @@ function Secundaria({ route, navigation }) {
   const guardarPartida = async (intentos, resultado) => {
       const esteResultado = { nombre: nombre, resultado: resultado, intentos: intentos };
       //AsyncStorage.clear()
-      AsyncStorage.setItem(('resultado' + contadorPartidas), JSON.stringify(esteResultado)); 
+      await AsyncStorage.setItem(('resultado' + contadorPartidas), JSON.stringify(esteResultado)); 
+      contadorPartidas++;
   }
 
   return (
@@ -327,37 +325,31 @@ function Secundaria({ route, navigation }) {
         </View>
 
       </View>
-      {/*
-            <View style={{ margin: 20, justifyContent: 'center' }}>
-        <Button style={{ margin: 20 }} title="Principal" onPress={() => navigation.navigate('Principal')} />
-      </View>
-      <View style={{ margin: 20, justifyContent: 'center' }}>
-        <Button style={{ margin: 20 }} title="Anterior" onPress={() => navigation.goBack()} />
-      </View>
-  
-       */}
     </View>
   );
 }
 
 function Terciaria({ route, navigation }) {
-  const [resultados, setResultados] = useState();
+  const [resultados, setResultados] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        var array = new Array;
         AsyncStorage.getAllKeys((err, keys) => {
           AsyncStorage.multiGet(keys, (err, stores) => {
             stores.map((result, i, store) => {
-              // get at each store's key/value so you can work with it
-              array.push(JSON.parse(store[i][1]));
-            });
+              console.log("pushing key: " + store[i][0]);
+              const value = JSON.parse(store[i][1]);
+              console.log("pushing key: " + value.nombre);
+              setResultados([...resultados, { nombre: value.nombre, resultado: value.resultado, intentos: value.intentos }])
+              setTimeout(() => {
+                setLoading(false);
+              }, 500);
+              console.log('resultados state: ' + resultados);
+            });  
           });
         });
-
-        setResultados(array);
-        console.log('resultados state: ' + resultados);
 
       } catch (e) {
         console.log(e)
@@ -368,30 +360,16 @@ function Terciaria({ route, navigation }) {
 
 
   return (
-    (resultados) ? (
+    (!loading && resultados) ? (
     <View style={{ alignItems: 'center', justifyContent: 'space-around', marginTop: 50 }}>
       <View>
+        <View>
+          <Text width="300px" style={styles.item}>Nombre | Resultado | Intentos</Text>
+        </View>
         {resultados.map((res) => {
-            <View>
-              <Text>{res.nombre}</Text>
-              <Text>{res.resultado}</Text>
-              <Text>{res.intentos}</Text>
-            </View>
+          <Text width="300px" style={styles.item}>{res.nombre}</Text>
         })}
       </View>
-     {/* <Text style={{ margin: 20, fontSize: 20 }}>{partida}</Text>*/}
-
-
-
-      {/*
-            <View style={{ margin: 20, justifyContent: 'center' }}>
-        <Button style={{ margin: 20 }} title="Principal" onPress={() => navigation.navigate('Principal')} />
-      </View>
-      <View style={{ margin: 20, justifyContent: 'center' }}>
-        <Button style={{ margin: 20 }} title="Anterior" onPress={() => navigation.goBack()} />
-      </View>
-  
-       */}
     </View>
     ) : (<View><Text>No hay resultados</Text></View>)
   );
