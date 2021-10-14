@@ -132,7 +132,7 @@ function Principal({ navigation }) {
             borderRadius: 100,
           }}
           marginTop="200 px"
-          title="Comenzar"
+          title="Ver Historial"
           color="#b4d8b0"
           borderColor="#060606"
           width="200"
@@ -226,14 +226,17 @@ function Secundaria({ route, navigation }) {
       guardarPartida();
     }
     if (numero != null && numero.toString() === numeroSecreto.toString()) {
-      alert("Ganaste!")
+    //  alert("Ganaste!")
       setFin(true);
-      guardarPartida();
+
+    //do what you need here
+    guardarPartida();
+  
     }
 
   }
 
-  const evaluarNumeroIngresado = () => {
+  const evaluarNumeroIngresado = async () => {
     var ns = numeroSecreto.toString();
     var x = numero.toString();
     var bien = 0;
@@ -288,7 +291,7 @@ function Secundaria({ route, navigation }) {
   }
   { numeroSecreto, evaluaciones }
   const guardarPartida = async () => {
-    try {
+
       // await AsyncStorage.setItem(otherParam,  JSON.stringify( numeroSecreto)   )
       //await AsyncStorage.setItem('@'+ otherParam,   JSON.stringify(evaluaciones)   )
       //AsyncStorage.clear()
@@ -299,13 +302,11 @@ function Secundaria({ route, navigation }) {
       //    await AsyncStorage.setItem(otherParam, + '{' + numeroSecreto + ',' + evaluaciones + '}'  )
       //  }
       //  else{
+        await evaluarNumeroIngresado(numero);
       await AsyncStorage.setItem(otherParam, await AsyncStorage.getItem(otherParam) + '{"numero":' + '"' + +numeroSecreto + '"' + ', "evaluaciones":' + '"' + evaluaciones + '"' + '}' + ',')
       //   }
 
       alert(await AsyncStorage.getItem(otherParam))
-    } catch (e) {
-      console.log("ERROR WHEN TRYING TO SAVE DATA")
-    }
 
     console
   }
@@ -367,7 +368,11 @@ function Terciaria({ route, navigation }) {
     async function fetchData() {
       try {
         const aux = await AsyncStorage.getItem(otherParam)
-        setPartida(JSON.parse('[' + aux.slice(4, -1) + ']'))
+       // console.log(JSON.parse('[' + aux.slice(4, -1) + ']'))
+      //  setPartida(JSON.parse('[' + aux.slice(4, -1) + ']'))
+      setPartida('[' + aux.slice(4, -1) + ']')
+      //  console.log('[' + aux.slice(4, -1) + ']')
+        //console.log(partida)
         // setPartida((aux.slice(4, -1)));
 
 
@@ -399,7 +404,7 @@ function Terciaria({ route, navigation }) {
           })*/}
     
       </View>
-     {/* <Text style={{ margin: 20, fontSize: 20 }}>{partida}</Text>*/}
+      <Text style={{ margin: 20, fontSize: 20 }}>{partida}</Text>
 
 
 
